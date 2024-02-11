@@ -185,6 +185,7 @@ void open_door() {
 }
 
 void reset_password() {
+    wrong_password = 0;
     lcd_clear();
     lcd_gotoxy(0, 0);
     sprintf(text, "Reset Pass Mode");
@@ -237,6 +238,9 @@ void reset_password() {
     ret = strncmp(password, pass, 16);
 
     if (ret == 0) {
+        for (i = 0; i < 16; i++) {
+            pass[i] = '\0';
+        }
         lcd_clear();
         lcd_gotoxy(0, 0);
         sprintf(text, "Correct Password!");
@@ -280,7 +284,7 @@ void reset_password() {
 			pass[i] = key;
 		}
 		
-        pass[i + 1] = '\0';
+        pass[i] = '\0';
 
 		lcd_clear();
 		lcd_gotoxy(0, 0);
@@ -451,11 +455,14 @@ void main(void)
 
             if (key == 'r') {
                 reset_password();
-                i = -1;
                 lcd_clear();
                 lcd_gotoxy(0, 0);
                 sprintf(text, "Enter Password:");
                 lcd_puts(text);
+                for (i = 0; i < 16; i++) {
+                    password[i] = '\0';
+                }
+                i = -1;
                 continue;
             }
             if (key == '*') {
@@ -534,7 +541,8 @@ void main(void)
                     sprintf(text, "Wait %d Seconds", 9 - counter);
                     lcd_puts(text);
 
-                    delay_ms(125); 
+                    delay_ms(125);
+                    wrong_password = 0; 
                     counter += 1;
                 }
             }
