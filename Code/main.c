@@ -2,7 +2,7 @@
 This program was created by the
 CodeWizardAVR V3.14 Advanced
 Automatic Program Generator
-© Copyright 1998-2014 Pavel Haiduc, HP InfoTech s.r.l.
+ï¿½ Copyright 1998-2014 Pavel Haiduc, HP InfoTech s.r.l.
 http://www.hpinfotech.com
 
 Project : Digital-Lock
@@ -49,7 +49,7 @@ Data Stack size         : 512
 // Declare your global variables here
 
 char text[16], password[16], pass[17] = "1382", key;
-int i, counter, ret, flag, set_pass_counter;
+int i, counter, ret, flag, set_pass_counter, wrong_password = 0;
 
 char read_key(int reset_mode) {
     set_pass_counter = 0;
@@ -432,7 +432,7 @@ void main(void)
     // D7 - PORTA Bit 7
     // Characters/line: 16
     lcd_init(16);      
-    
+
     while (1) {
         lcd_clear();
         lcd_gotoxy(0, 0);
@@ -486,15 +486,17 @@ void main(void)
         ret = strncmp(password, pass, 16);
 
         if (ret == 0) {
-                lcd_clear();
-                lcd_gotoxy(0, 0);
-                sprintf(text, "Correct Password!");
-                lcd_puts(text);
+            wrong_password = 0;
+            lcd_clear();
+            lcd_gotoxy(0, 0);
+            sprintf(text, "Correct Password!");
+            lcd_puts(text);
                 
-                open_door();
-                lock_door();
+            open_door();
+            lock_door();
         } 
         else {
+            wrong_password += 1;
             lcd_clear();
             lcd_gotoxy(0, 0);
             sprintf(text, "Wrong Password!");
@@ -509,6 +511,32 @@ void main(void)
                 PIND.3 = 0; 
                 delay_ms(25);
                 counter += 1;
+            }
+
+            if (wrong_password == 3) {
+                counter = 0;
+                while (counter <= 9) {
+
+                    PIND.2 = 0;
+                    PIND.2 = 1;
+                    PIND.3 = 0;
+                    PIND.3 = 1;
+                    PIND.4 = 0;
+                    PIND.4 = 1;
+
+                    lcd_clear();
+
+                    lcd_gotoxy(0, 0);
+                    sprintf(text, "3 Times Wrong!");
+                    lcd_puts(text);
+
+                    lcd_gotoxy(0, 1);
+                    sprintf(text, "Wait %d Seconds", 9 - counter);
+                    lcd_puts(text);
+
+                    delay_ms(125); 
+                    counter += 1;
+                }
             }
         }
     }
